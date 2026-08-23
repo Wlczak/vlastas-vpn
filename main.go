@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"net/netip"
 
+	"github.com/Wlczak/vlastas-vpn/routertun"
 	"golang.zx2c4.com/wireguard/conn"
 	"golang.zx2c4.com/wireguard/device"
-	"golang.zx2c4.com/wireguard/tun/netstack"
 )
 
 func main() {
@@ -32,40 +32,28 @@ func main() {
 		downPrivateKey,
 		downClientPublicKey,
 	)
-	upTun, upNet, err := netstack.CreateNetTUN(
-		[]netip.Addr{
-			netip.MustParseAddr("10.0.0.169"),
-		},
-		[]netip.Addr{
-			netip.MustParseAddr("1.1.1.1"),
-		},
-		1420,
-	)
+	router := routertun.New()
+	up, err := router.CreateInterface(1, netip.MustParseAddr("10.0.0.169"), 24, 1420)
 	if err != nil {
 		panic(err)
 	}
 
-	downTun, downNet, err := netstack.CreateNetTUN(
-		[]netip.Addr{
-			netip.MustParseAddr("10.1.0.1"),
-		},
-		[]netip.Addr{
-			netip.MustParseAddr("1.1.1.1"),
-		},
-		1420,
-	)
+	down, err := router.CreateInterface(2, netip.MustParseAddr("10.1.0.1"), 24, 1420)
 	if err != nil {
 		panic(err)
 	}
 
+	if err := router.EnableForwarding(); err != nil {
+		panic(err)
+	}
 	upDev := device.NewDevice(
-		upTun,
+		up.TUN,
 		conn.NewDefaultBind(),
 		device.NewLogger(device.LogLevelVerbose, ""),
 	)
 
 	downDev := device.NewDevice(
-		downTun,
+		down.TUN,
 		conn.NewDefaultBind(),
 		device.NewLogger(device.LogLevelVerbose, ""),
 	)
