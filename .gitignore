@@ -1,0 +1,5 @@
+*.conf
+*.key
+.env
+.env.*
+wireguard-go/

@@ -12,20 +12,20 @@ import (
 )
 
 func main() {
-	privateKey := base64tohex("")
-	publicKey := base64tohex("")
-	endpoint := ""
-	presharedKey := base64tohex("")
-	allowedIP := ""
-	persistentKeepaliveInterval := "25"
+	upPrivateKey := base64tohex("")
+	upPeerPublicKey := base64tohex("")
+	upEndpoint := ""
+	upAllowedIP := "0.0.0.0/0"
+	upPersistentKeepaliveInterval := "25"
+	upInterfaceIp := ""
 
 	upConfigString := fmt.Sprintf(
-		"private_key=%s\npublic_key=%s\npreshared_key=%s\nendpoint=%s\nallowed_ip=%s\npersistent_keepalive_interval=%s\n",
-		upPrivateKey, upPublicKey, upPresharedKey, upEndpoint, upAllowedIP, upPersistentKeepaliveInterval,
+		"private_key=%s\npublic_key=%s\nendpoint=%s\nallowed_ip=%s\npersistent_keepalive_interval=%s\n",
+		upPrivateKey, upPeerPublicKey, upEndpoint, upAllowedIP, upPersistentKeepaliveInterval,
 	)
 
-	downPrivateKey := ""
-	downClientPublicKey := ""
+	downPrivateKey := base64tohex("")
+	downClientPublicKey := base64tohex("")
 
 	downConfigString := fmt.Sprintf(
 		"private_key=%s\nlisten_port=51821\npublic_key=%s\nallowed_ip=10.1.0.2/32\n",
@@ -33,12 +33,12 @@ func main() {
 		downClientPublicKey,
 	)
 	router := routertun.New()
-	up, err := router.CreateInterface(1, netip.MustParseAddr("10.0.0.169"), 24, 1420)
+	up, err := router.CreateInterface(1, netip.MustParseAddr(upInterfaceIp), 32, 1420, true)
 	if err != nil {
 		panic(err)
 	}
 
-	down, err := router.CreateInterface(2, netip.MustParseAddr("10.1.0.1"), 24, 1420)
+	down, err := router.CreateInterface(2, netip.MustParseAddr("10.1.0.1"), 24, 1420, false)
 	if err != nil {
 		panic(err)
 	}
@@ -46,6 +46,10 @@ func main() {
 	if err := router.EnableForwarding(); err != nil {
 		panic(err)
 	}
+	if err := router.EnableNAT(netip.MustParsePrefix("10.1.0.0/24"), netip.MustParseAddr(upInterfaceIp)); err != nil {
+		panic(err)
+	}
+	router.Up, router.Down = up, down
 	upDev := device.NewDevice(
 		up.TUN,
 		conn.NewDefaultBind(),
@@ -75,9 +79,7 @@ func main() {
 		panic(err)
 	}
 
-	for true {
-
-	}
+	select {}
 }
 
 func base64tohex(base64String string) string {

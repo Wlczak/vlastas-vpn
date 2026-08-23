@@ -37,47 +37,18 @@ type netTun struct {
 	mtu      int
 	nic      tcpip.NICID
 }
-type endpoint struct {
-	*channel.Endpoint
-	tun *netTun
-}
-
-func (e *endpoint) Attach(d stack.NetworkDispatcher)             { e.tun.ep.Attach(d) }
-func (e *endpoint) IsAttached() bool                             { return e.tun.ep.IsAttached() }
-func (e *endpoint) MTU() uint32                                  { return e.tun.ep.MTU() }
-func (e *endpoint) Capabilities() stack.LinkEndpointCapabilities { return 0 }
-func (e *endpoint) MaxHeaderLength() uint16                      { return 0 }
-func (e *endpoint) LinkAddress() tcpip.LinkAddress               { return "" }
-func (e *endpoint) WritePacket(_ stack.RouteInfo, _ tcpip.NetworkProtocolNumber, p *stack.PacketBuffer) tcpip.Error {
-	v := p.ToView()
-	p.DecRef()
-	e.tun.incoming <- v
-	return nil
-}
-func (e *endpoint) WritePackets(ps stack.PacketBufferList) (int, tcpip.Error) {
-	for _, p := range ps.AsSlice() {
-		if err := e.WritePacket(stack.RouteInfo{}, 0, p); err != nil {
-			return 0, err
-		}
-	}
-	return ps.Len(), nil
-}
-func (e *endpoint) WriteRawPacket(*stack.PacketBuffer) tcpip.Error { return nil }
-func (e *endpoint) ARPHardwareType() header.ARPHardwareType        { return header.ARPHardwareNone }
-func (e *endpoint) AddHeader(*stack.PacketBuffer) {
-}
 
 func New() *Router {
 	return &Router{Stack: stack.New(stack.Options{NetworkProtocols: []stack.NetworkProtocolFactory{ipv4.NewProtocol, ipv6.NewProtocol}, TransportProtocols: []stack.TransportProtocolFactory{tcp.NewProtocol, udp.NewProtocol, icmp.NewProtocol4, icmp.NewProtocol6}, HandleLocal: true})}
 }
-func (r *Router) CreateInterface(id tcpip.NICID, addr netip.Addr, prefix, mtu int) (*Interface, error) {
+func (r *Router) CreateInterface(id tcpip.NICID, addr netip.Addr, prefix, mtu int, defaultRoute bool) (*Interface, error) {
 	if !addr.IsValid() || prefix < 0 || prefix > addr.BitLen() {
 		return nil, fmt.Errorf("invalid address or prefix")
 	}
 	e := channel.New(1024, uint32(mtu), "")
-	n := &netTun{ep: e, stack: r.Stack, events: make(chan tun.Event, 1), incoming: make(chan *buffer.View), mtu: mtu, nic: id}
+	n := &netTun{ep: e, stack: r.Stack, events: make(chan tun.Event, 1), incoming: make(chan *buffer.View, 64), mtu: mtu, nic: id}
 	n.notify = e.AddNotify(n)
-	if err := r.Stack.CreateNIC(id, &endpoint{Endpoint: e, tun: n}); err != nil {
+	if err := r.Stack.CreateNIC(id, e); err != nil {
 		return nil, fmt.Errorf("CreateNIC: %v", err)
 	}
 	proto := ipv6.ProtocolNumber
@@ -89,10 +60,15 @@ func (r *Router) CreateInterface(id tcpip.NICID, addr netip.Addr, prefix, mtu in
 		r.Stack.RemoveNIC(id)
 		return nil, fmt.Errorf("AddProtocolAddress: %v", err)
 	}
-	if addr.Is4() {
-		r.Stack.AddRoute(tcpip.Route{Destination: header.IPv4EmptySubnet, NIC: id})
-	} else {
-		r.Stack.AddRoute(tcpip.Route{Destination: header.IPv6EmptySubnet, NIC: id})
+	r.Stack.AddRoute(tcpip.Route{Destination: tcpip.AddressWithPrefix{
+		Address: tcpip.AddrFromSlice(addr.AsSlice()), PrefixLen: prefix,
+	}.Subnet(), NIC: id})
+	if defaultRoute {
+		if addr.Is4() {
+			r.Stack.AddRoute(tcpip.Route{Destination: header.IPv4EmptySubnet, NIC: id})
+		} else {
+			r.Stack.AddRoute(tcpip.Route{Destination: header.IPv6EmptySubnet, NIC: id})
+		}
 	}
 	n.events <- tun.EventUp
 	return &Interface{TUN: n, EP: e, NICID: id}, nil
@@ -104,6 +80,65 @@ func (r *Router) EnableForwarding() error {
 	if err := r.Stack.SetForwardingDefaultAndAllNICs(ipv6.ProtocolNumber, true); err != nil {
 		return fmt.Errorf("IPv6 forwarding: %v", err)
 	}
+	return nil
+}
+
+// EnableNAT translates packets sourced from downstream to upstreamAddr. The
+// connection tracker automatically applies the reverse translation to reply
+// packets, allowing every address in downstream to share one upstream VPN IP.
+// It must be called before packet forwarding starts.
+func (r *Router) EnableNAT(downstream netip.Prefix, upstreamAddr netip.Addr) error {
+	if !downstream.IsValid() || !upstreamAddr.IsValid() || downstream.Addr().Is4() != upstreamAddr.Is4() {
+		return fmt.Errorf("NAT source prefix and upstream address must be valid and use the same IP family")
+	}
+
+	downstream = downstream.Masked()
+	mask := make([]byte, downstream.Addr().BitLen()/8)
+	for bit := 0; bit < downstream.Bits(); bit++ {
+		mask[bit/8] |= 1 << (7 - bit%8)
+	}
+
+	isIPv6 := upstreamAddr.Is6()
+	filter := stack.EmptyFilter4()
+	proto := ipv4.ProtocolNumber
+	if isIPv6 {
+		filter = stack.EmptyFilter6()
+		proto = ipv6.ProtocolNumber
+	}
+	filter.Src = tcpip.AddrFromSlice(downstream.Addr().AsSlice())
+	filter.SrcMask = tcpip.AddrFromSlice(mask)
+	// Do not translate traffic between devices on the downstream network.
+	filter.Dst = filter.Src
+	filter.DstMask = filter.SrcMask
+	filter.DstInvert = true
+
+	table := r.Stack.IPTables().GetTable(stack.NATID, isIPv6)
+	postrouting := table.BuiltinChains[stack.Postrouting]
+	if postrouting == stack.HookUnset {
+		return fmt.Errorf("NAT table has no postrouting chain")
+	}
+
+	rule := stack.Rule{
+		Filter: filter,
+		Target: &stack.SNATTarget{
+			Addr:            tcpip.AddrFromSlice(upstreamAddr.AsSlice()),
+			NetworkProtocol: proto,
+			ChangeAddress:   true,
+			ChangePort:      true,
+		},
+	}
+	table.Rules = append(table.Rules, stack.Rule{})
+	copy(table.Rules[postrouting+1:], table.Rules[postrouting:])
+	table.Rules[postrouting] = rule
+	for hook := stack.Hook(0); hook < stack.NumHooks; hook++ {
+		if hook != stack.Postrouting && table.BuiltinChains[hook] >= postrouting {
+			table.BuiltinChains[hook]++
+		}
+		if table.Underflows[hook] >= postrouting {
+			table.Underflows[hook]++
+		}
+	}
+	r.Stack.IPTables().ReplaceTable(stack.NATID, table, isIPv6)
 	return nil
 }
 func (r *Router) Close()                   { r.Stack.Close() }
@@ -148,7 +183,10 @@ func (t *netTun) WriteNotify() {
 	}
 	v := p.ToView()
 	p.DecRef()
-	t.incoming <- v
+	data := make([]byte, v.Size())
+	if _, err := v.Read(data); err == nil {
+		t.incoming <- buffer.NewViewWithData(data)
+	}
 }
 func (t *netTun) Close() error {
 	t.stack.RemoveNIC(t.nic)
