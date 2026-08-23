@@ -1,6 +1,6 @@
 module github.com/Wlczak/vlastas-vpn
 
-go 1.26.6
+go 1.26.7
 
 require (
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
