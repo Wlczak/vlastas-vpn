@@ -19,25 +19,73 @@ func main() {
 	allowedIP := ""
 	persistentKeepaliveInterval := "25"
 
-	configString := fmt.Sprintf(
+	upConfigString := fmt.Sprintf(
 		"private_key=%s\npublic_key=%s\npreshared_key=%s\nendpoint=%s\nallowed_ip=%s\npersistent_keepalive_interval=%s\n",
-		privateKey, publicKey, presharedKey, endpoint, allowedIP, persistentKeepaliveInterval,
+		upPrivateKey, upPublicKey, upPresharedKey, upEndpoint, upAllowedIP, upPersistentKeepaliveInterval,
 	)
-	tun, _, err := netstack.CreateNetTUN(
-		[]netip.Addr{netip.MustParseAddr("10.0.0.169")}, // tunnel-internal IP
-		[]netip.Addr{netip.MustParseAddr("1.1.1.1")},    // DNS, if needed
-		1420, // MTU
+
+	downPrivateKey := ""
+	downClientPublicKey := ""
+
+	downConfigString := fmt.Sprintf(
+		"private_key=%s\nlisten_port=51821\npublic_key=%s\nallowed_ip=10.1.0.2/32\n",
+		downPrivateKey,
+		downClientPublicKey,
+	)
+	upTun, upNet, err := netstack.CreateNetTUN(
+		[]netip.Addr{
+			netip.MustParseAddr("10.0.0.169"),
+		},
+		[]netip.Addr{
+			netip.MustParseAddr("1.1.1.1"),
+		},
+		1420,
 	)
 	if err != nil {
 		panic(err)
 	}
 
-	dev := device.NewDevice(tun, conn.NewDefaultBind(), device.NewLogger(device.LogLevelVerbose, ""))
-	err = dev.IpcSet(configString) // your peer/key config, same UAPI format as before
+	downTun, downNet, err := netstack.CreateNetTUN(
+		[]netip.Addr{
+			netip.MustParseAddr("10.1.0.1"),
+		},
+		[]netip.Addr{
+			netip.MustParseAddr("1.1.1.1"),
+		},
+		1420,
+	)
 	if err != nil {
 		panic(err)
 	}
-	dev.Up()
+
+	upDev := device.NewDevice(
+		upTun,
+		conn.NewDefaultBind(),
+		device.NewLogger(device.LogLevelVerbose, ""),
+	)
+
+	downDev := device.NewDevice(
+		downTun,
+		conn.NewDefaultBind(),
+		device.NewLogger(device.LogLevelVerbose, ""),
+	)
+
+	err = upDev.IpcSet(upConfigString)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := upDev.Up(); err != nil {
+		panic(err)
+	}
+
+	if err := downDev.IpcSet(downConfigString); err != nil {
+		panic(err)
+	}
+
+	if err := downDev.Up(); err != nil {
+		panic(err)
+	}
 
 	for true {
 
