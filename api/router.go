@@ -9,5 +9,13 @@ func RunApi() {
 	r := gin.Default()
 
 	r.Any("/admin", dashboard.HandleAdminDashRoot)
+
+	apiRouter := r.Group("/api")
+
+	{
+		apiRouter.POST("/setLocation", HandleSetLocation)
+		apiRouter.GET("/getLocation", HandleGetLocation)
+	}
+
 	r.Run()
 }

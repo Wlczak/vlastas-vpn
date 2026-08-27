@@ -8,12 +8,15 @@ import (
 
 	"github.com/Wlczak/vlastas-vpn/api"
 	"github.com/Wlczak/vlastas-vpn/routertun"
+	"github.com/Wlczak/vlastas-vpn/state"
 	"golang.zx2c4.com/wireguard/conn"
 	"golang.zx2c4.com/wireguard/device"
 )
 
 func main() {
 	go api.RunApi()
+
+	state.SetStateDefaults()
 	select {}
 }
 
