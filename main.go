@@ -6,12 +6,31 @@ import (
 	"fmt"
 	"net/netip"
 
+	"github.com/Wlczak/vlastas-vpn/api"
 	"github.com/Wlczak/vlastas-vpn/routertun"
 	"golang.zx2c4.com/wireguard/conn"
 	"golang.zx2c4.com/wireguard/device"
 )
 
 func main() {
+	go api.RunApi()
+	select {}
+}
+
+func base64tohex(base64String string) string {
+	base64Bytes := make([]byte, base64.StdEncoding.DecodedLen(len(base64String)))
+	n, err := base64.StdEncoding.Decode(base64Bytes, []byte(base64String))
+	if err != nil {
+		panic(err)
+	}
+	base64Bytes = base64Bytes[:n]
+
+	hex := hex.EncodeToString(base64Bytes)
+
+	return hex
+}
+
+func startVpn() {
 	upPrivateKey := base64tohex("")
 	upPeerPublicKey := base64tohex("")
 	upEndpoint := ""
@@ -78,19 +97,4 @@ func main() {
 	if err := downDev.Up(); err != nil {
 		panic(err)
 	}
-
-	select {}
-}
-
-func base64tohex(base64String string) string {
-	base64Bytes := make([]byte, base64.StdEncoding.DecodedLen(len(base64String)))
-	n, err := base64.StdEncoding.Decode(base64Bytes, []byte(base64String))
-	if err != nil {
-		panic(err)
-	}
-	base64Bytes = base64Bytes[:n]
-
-	hex := hex.EncodeToString(base64Bytes)
-
-	return hex
 }
