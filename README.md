@@ -1,6 +1,6 @@
-# vlastas-vpn
+# Vlasta'S VPN
 
-The backend for the Vlasta's VPN service.
+The backend service for the Vlasta's VPN project or VVPN
 
 ## The road to the MVP
 
