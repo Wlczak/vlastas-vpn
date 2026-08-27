@@ -42,6 +42,14 @@ func HandleSetLocation(ctx *gin.Context) {
 
 }
 
+// Get current location godoc
+// @Summary      Get current server location
+// @Description  Retrieves the currently set server location from state
+// @Tags         location
+// @Produce      json
+// @Success      200  {object}  state.ServerGeoLocation
+// @Failure      404  {object}  ErrorResponse
+// @Router       /getLocation [get]
 func HandleGetLocation(ctx *gin.Context) {
 	type GetLocationResponse struct {
 		Location state.ServerGeoLocation

@@ -1,3 +1,8 @@
+// @title           Vlasta's VPN api
+// @version         1.0
+// @description     API documentation for Vlasta's VPN.
+// @host            vpn.vlastas.cc
+// @BasePath        /api/v1
 package api
 
 import (
@@ -10,10 +15,11 @@ func RunApi() {
 
 	r.Any("/admin", dashboard.HandleAdminDashRoot)
 
-	apiRouter := r.Group("/api")
+	apiRouter := r.Group("/api/v1")
 
 	{
 		apiRouter.POST("/setLocation", HandleSetLocation)
+
 		apiRouter.GET("/getLocation", HandleGetLocation)
 		apiRouter.GET("/getLocationList", HandleGetLocationList)
 	}
