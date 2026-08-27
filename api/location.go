@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"slices"
 
+	h "github.com/Wlczak/vlastas-vpn/helpers"
 	"github.com/Wlczak/vlastas-vpn/state"
 	"github.com/gin-gonic/gin"
 )
@@ -16,29 +17,43 @@ type ErrorResponse struct {
 
 func HandleSetLocation(ctx *gin.Context) {
 	type SetLocationRequest struct {
-		Location string
+		LocationCode string
 	}
 
-	locationByte, _ := io.ReadAll(ctx.Request.Body)
-	setLocationRequest := &SetLocationRequest{}
-	json.Unmarshal(locationByte, &setLocationRequest)
+	locationRequestByte, err := io.ReadAll(ctx.Request.Body)
+	h.ChckErr(err)
 
-	if slices.Contains(state.GetServerState().LocationList, setLocationRequest.Location) {
-		state.SetServerLocation(setLocationRequest.Location)
+	locationList := state.GetServerState().LocationList
+	locationCodeList := make([]string, len(locationList))
+	for i, location := range locationList {
+		locationCodeList[i] = location.Code
+	}
+
+	setLocationRequest := &SetLocationRequest{}
+	err = json.Unmarshal(locationRequestByte, &setLocationRequest)
+	h.ChckErr(err)
+
+	if slices.Contains(locationCodeList, setLocationRequest.LocationCode) {
+		state.SetServerLocationByCode(setLocationRequest.LocationCode)
 		ctx.JSON(http.StatusOK, setLocationRequest)
 	} else {
-		ctx.JSON(http.StatusBadRequest, &ErrorResponse{Msg: "Could not find given location in the server list"})
+		ctx.JSON(http.StatusBadRequest, &ErrorResponse{Msg: "Could not find " + setLocationRequest.LocationCode + " given location in the server list"})
 	}
 
 }
 
 func HandleGetLocation(ctx *gin.Context) {
 	type GetLocationResponse struct {
-		Location string
+		Location state.ServerGeoLocation
 	}
 	location := state.GetServerState().CurrentLocation
 	getLocationResponse := &GetLocationResponse{
 		Location: location,
 	}
 	ctx.JSON(http.StatusOK, getLocationResponse)
+}
+
+func HandleGetLocationList(ctx *gin.Context) {
+	s := state.GetServerState()
+	ctx.JSON(http.StatusOK, s.LocationList)
 }

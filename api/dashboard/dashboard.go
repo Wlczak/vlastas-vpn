@@ -9,21 +9,21 @@ import (
 )
 
 type AdminDashValues struct {
-	Locations       []*state.ServerGeoLocation
-	CurrentLocation string
+	Locations       []state.ServerGeoLocation
+	CurrentLocation state.ServerGeoLocation
 }
 
 func HandleAdminDashRoot(ctx *gin.Context) {
 	if ctx.Request.Method == http.MethodPost {
-		location := ctx.PostForm("location")
-		state.SetServerLocation(state.ServerGeoLocation{Code: location, Name: location})
+		locationCode := ctx.PostForm("location")
+		state.SetServerLocationByCode(locationCode)
 		// ctx.String(http.StatusOK, location)
 		// ctx.Redirect(http.StatusTemporaryRedirect, "/admin")
 	}
 
 	adminDashValues := &AdminDashValues{
-		Locations:       []*state.ServerGeoLocation{{"location1", "Location1"}, {"location2", "Location2"}, {"location3", "Location3"}},
-		CurrentLocation: state.GetServerState().CurrentLocation.Name,
+		Locations:       state.GetServerState().LocationList,
+		CurrentLocation: state.GetServerState().CurrentLocation,
 	}
 
 	const adminDashTemplate = "admin.tmpl"

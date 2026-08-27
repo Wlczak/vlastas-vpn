@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <p>Current location: {{.CurrentLocation}}</p>
-    <form action="" method="post">
-      <select name="location">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+</head>
+
+<body>
+  <p>Current location: {{.CurrentLocation.Name}}</p>
+  <form action="" method="post">
+    <select name="location">
       {{range .Locations}}
-        <option value="{{.Code}}" {{ if eq .Code $.CurrentLocation }} selected {{ end }}>{{.Name}}</option>
+      <option value="{{.Code}}" {{ if eq .Code $.CurrentLocation.Code }} selected {{ end }}>{{.Name}}</option>
       {{end}}
-      </select>
-      <button type="submit">Submit</button>
-    </form>
-  </body>
+    </select>
+    <button type="submit">Submit</button>
+  </form>
+</body>
+
 </html>

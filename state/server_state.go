@@ -9,8 +9,15 @@ func GetServerState() *ServerState {
 func SetServerLocation(newLocation ServerGeoLocation) {
 	state.CurrentLocation = newLocation
 }
+func SetServerLocationByCode(newLocationCode string) {
+	for _, locationListItem := range state.LocationList {
+		if locationListItem.Code == newLocationCode {
+			state.CurrentLocation = locationListItem
+		}
+	}
+}
 
 func SetStateDefaults() {
-	state.LocationList = []ServerGeoLocation{{Code: "location1", Name: "Location1"}, {Code: "location2", Name: "Location2"}, {Code: "location3", Name: "Location3"}}
+	state.LocationList = []ServerGeoLocation{{Code: "cz", Name: "Czechia"}, {Code: "uk", Name: "United Kingdom"}, {Code: "jp", Name: "Japan"}}
 	state.CurrentLocation = state.LocationList[0]
 }

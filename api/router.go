@@ -15,6 +15,7 @@ func RunApi() {
 	{
 		apiRouter.POST("/setLocation", HandleSetLocation)
 		apiRouter.GET("/getLocation", HandleGetLocation)
+		apiRouter.GET("/getLocationList", HandleGetLocationList)
 	}
 
 	r.Run()
