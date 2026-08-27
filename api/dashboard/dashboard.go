@@ -3,12 +3,14 @@ package dashboard
 import (
 	"net/http"
 
+	"github.com/Wlczak/vlastas-vpn/state"
 	"github.com/Wlczak/vlastas-vpn/templates"
 	"github.com/gin-gonic/gin"
 )
 
 type AdminDashValues struct {
-	Locations []*ServerGeoLocation
+	Locations       []*ServerGeoLocation
+	CurrentLocation string
 }
 type ServerGeoLocation struct {
 	Code string
@@ -16,17 +18,20 @@ type ServerGeoLocation struct {
 }
 
 func HandleAdminDashRoot(ctx *gin.Context) {
-	adminDashValues := &AdminDashValues{
-		Locations: []*ServerGeoLocation{{"location1", "Location1"}, {"location2", "Location2"}, {"location3", "Location3"}},
+	if ctx.Request.Method == http.MethodPost {
+		location := ctx.PostForm("location")
+		state.SetServerLocation(location)
+		// ctx.String(http.StatusOK, location)
+		// ctx.Redirect(http.StatusTemporaryRedirect, "/admin")
 	}
 
-	if ctx.Request.Method == http.MethodGet {
-		const adminDashTemplate = "admin.tmpl"
-		tmpl := templates.ParseTemplate(adminDashTemplate)
-		tmpl.ExecuteTemplate(ctx.Writer, adminDashTemplate, adminDashValues)
-	} else {
-		location := ctx.PostForm("location")
-		ctx.String(http.StatusOK, location)
+	adminDashValues := &AdminDashValues{
+		Locations:       []*ServerGeoLocation{{"location1", "Location1"}, {"location2", "Location2"}, {"location3", "Location3"}},
+		CurrentLocation: state.GetServerState().Location,
 	}
+
+	const adminDashTemplate = "admin.tmpl"
+	tmpl := templates.ParseTemplate(adminDashTemplate)
+	tmpl.ExecuteTemplate(ctx.Writer, adminDashTemplate, adminDashValues)
 
 }
