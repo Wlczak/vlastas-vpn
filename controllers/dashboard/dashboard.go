@@ -30,5 +30,5 @@ func HandleAdminDashRoot(ctx *gin.Context) {
 	const adminDashTemplate = "admin.tmpl"
 	tmpl := templates.ParseTemplate(adminDashTemplate)
 	err := tmpl.ExecuteTemplate(ctx.Writer, adminDashTemplate, adminDashValues)
-	h.ChckErr(err)
+	h.PanicChckErr(err)
 }

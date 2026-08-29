@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/netip"
 
-	"github.com/Wlczak/vlastas-vpn/api"
 	"github.com/Wlczak/vlastas-vpn/routertun"
 	"github.com/Wlczak/vlastas-vpn/state"
 	"golang.zx2c4.com/wireguard/conn"
@@ -14,7 +13,11 @@ import (
 )
 
 func main() {
-	go api.RunApi()
+	r := SetupRouter()
+
+	go func() {
+		r.Run()
+	}()
 
 	state.SetStateDefaults()
 	select {}

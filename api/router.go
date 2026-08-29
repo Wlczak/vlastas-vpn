@@ -6,23 +6,15 @@
 package api
 
 import (
-	"github.com/Wlczak/vlastas-vpn/api/dashboard"
 	"github.com/gin-gonic/gin"
 )
 
-func RunApi() {
-	r := gin.Default()
+func SetupApiRouter(apiRouter *gin.RouterGroup) *gin.RouterGroup {
 
-	r.Any("/admin", dashboard.HandleAdminDashRoot)
+	apiRouter.POST("/setLocation", HandleSetLocation)
 
-	apiRouter := r.Group("/api/v1")
+	apiRouter.GET("/getLocation", HandleGetLocation)
+	apiRouter.GET("/getLocationList", HandleGetLocationList)
 
-	{
-		apiRouter.POST("/setLocation", HandleSetLocation)
-
-		apiRouter.GET("/getLocation", HandleGetLocation)
-		apiRouter.GET("/getLocationList", HandleGetLocationList)
-	}
-
-	r.Run()
+	return apiRouter
 }
