@@ -61,7 +61,7 @@ func HandleGetLocationList(ctx *gin.Context) {
 	s := state.GetServerState()
 	freshMullvadServerLocationList := fetchMullvadLocationList()
 
-	state.GetServerState().LocationList = freshMullvadServerLocationList
+	s.LocationList = freshMullvadServerLocationList
 	ctx.JSON(http.StatusOK, s.LocationList)
 }
 
@@ -75,7 +75,8 @@ func fetchMullvadLocationList() []state.MullvadServerLocation {
 	h.PanicChckErr(err)
 
 	mullvadServerLocationList := []state.MullvadServerLocation{}
-	json.Unmarshal(body, &mullvadServerLocationList)
+	err = json.Unmarshal(body, &mullvadServerLocationList)
+	h.PanicChckErr(err)
 
 	return mullvadServerLocationList
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/netip"
 
+	h "github.com/Wlczak/vlastas-vpn/helpers"
 	"github.com/Wlczak/vlastas-vpn/routertun"
 	"github.com/Wlczak/vlastas-vpn/state"
 	"golang.zx2c4.com/wireguard/conn"
@@ -16,7 +17,8 @@ func main() {
 	r := SetupRouter()
 
 	go func() {
-		r.Run()
+		err := r.Run()
+		h.PanicChckErr(err)
 	}()
 
 	state.SetStateDefaults()
