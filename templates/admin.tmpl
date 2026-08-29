@@ -10,9 +10,10 @@
 <body>
   <p>Current location: {{.CurrentLocation.CountryName}}</p>
   <form action="" method="post">
-    <select name="location">
+    <select name="hostname">
       {{range .Locations}}
-      <option value="{{.Hostname}}" {{ if eq .Hostname $.CurrentLocation.Hostname }} selected {{ end }}>{{.CountryName}}
+      <option value="{{.Hostname}}" {{ if eq .Hostname $.CurrentLocation.Hostname }} selected {{ end }}>
+        {{.CountryName}}, {{.CityName}} - {{.Hostname}}
       </option>
       {{end}}
     </select>

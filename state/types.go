@@ -11,19 +11,19 @@ type ServerGeoLocation struct {
 }
 
 type MullvadServerLocation struct {
-	Hostname             string
-	CountryCode          string
-	CountryName          string
-	CityCode             string
-	CityName             string
-	Active               bool
-	Owned                bool
-	Provider             string
-	IPv4AddrIn           string
-	IPv6AddrIn           string
-	NetworkPortSpeedGbit int
-	Type                 string
-	StatusMessages       []string
-	Pubkey               string
-	Daita                bool
+	Hostname             string   `json:"hostname"`
+	CountryCode          string   `json:"country_code"`
+	CountryName          string   `json:"country_name"`
+	CityCode             string   `json:"city_code"`
+	CityName             string   `json:"city_name"`
+	Active               bool     `json:"active"`
+	Owned                bool     `json:"owned"`
+	Provider             string   `json:"provider"`
+	IPv4AddrIn           string   `json:"ipv4_addr_in"`
+	IPv6AddrIn           string   `json:"ipv6_addr_in"`
+	NetworkPortSpeedGbit int      `json:"network_port_speed"`
+	Type                 string   `json:"type"`
+	StatusMessages       []string `json:"status_messages"`
+	Pubkey               string   `json:"pubkey"`
+	Daita                bool     `json:"daita"`
 }
