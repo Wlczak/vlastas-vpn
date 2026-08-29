@@ -6,18 +6,18 @@ func GetServerState() *ServerState {
 	return state
 }
 
-func SetServerLocation(newLocation ServerGeoLocation) {
+func SetServerLocation(newLocation MullvadServerLocation) {
 	state.CurrentLocation = newLocation
 }
-func SetServerLocationByCode(newLocationCode string) {
-	for _, locationListItem := range state.LocationList {
-		if locationListItem.Code == newLocationCode {
-			state.CurrentLocation = locationListItem
+func SetServerLocationByHostname(newHostname string) {
+	for _, mullvadLocationListItem := range state.LocationList {
+		if mullvadLocationListItem.Hostname == newHostname {
+			state.CurrentLocation = mullvadLocationListItem
 		}
 	}
 }
 
 func SetStateDefaults() {
-	state.LocationList = []ServerGeoLocation{{Code: "cz", Name: "Czechia"}, {Code: "uk", Name: "United Kingdom"}, {Code: "jp", Name: "Japan"}}
+	state.LocationList = []MullvadServerLocation{{Hostname: "default", CountryName: "DefaultLand"}}
 	state.CurrentLocation = state.LocationList[0]
 }

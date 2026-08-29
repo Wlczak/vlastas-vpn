@@ -8,11 +8,12 @@
 </head>
 
 <body>
-  <p>Current location: {{.CurrentLocation.Name}}</p>
+  <p>Current location: {{.CurrentLocation.CountryName}}</p>
   <form action="" method="post">
     <select name="location">
       {{range .Locations}}
-      <option value="{{.Code}}" {{ if eq .Code $.CurrentLocation.Code }} selected {{ end }}>{{.Name}}</option>
+      <option value="{{.Hostname}}" {{ if eq .Hostname $.CurrentLocation.Hostname }} selected {{ end }}>{{.CountryName}}
+      </option>
       {{end}}
     </select>
     <button type="submit">Submit</button>

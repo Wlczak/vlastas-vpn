@@ -9,14 +9,14 @@ import (
 )
 
 type AdminDashValues struct {
-	Locations       []state.ServerGeoLocation
-	CurrentLocation state.ServerGeoLocation
+	Locations       []state.MullvadServerLocation
+	CurrentLocation state.MullvadServerLocation
 }
 
 func HandleAdminDashRoot(ctx *gin.Context) {
 	if ctx.Request.Method == http.MethodPost {
-		locationCode := ctx.PostForm("location")
-		state.SetServerLocationByCode(locationCode)
+		locationHostname := ctx.PostForm("hostname")
+		state.SetServerLocationByHostname(locationHostname)
 		// ctx.String(http.StatusOK, location)
 		// ctx.Redirect(http.StatusTemporaryRedirect, "/admin")
 	}

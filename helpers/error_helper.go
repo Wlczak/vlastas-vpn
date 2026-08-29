@@ -1,6 +1,6 @@
 package helpers
 
-func ChckErr(e error) {
+func PanicChckErr(e error) {
 	if e != nil {
 		panic(e)
 	}
