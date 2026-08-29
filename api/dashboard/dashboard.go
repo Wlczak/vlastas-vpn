@@ -3,6 +3,7 @@ package dashboard
 import (
 	"net/http"
 
+	h "github.com/Wlczak/vlastas-vpn/helpers"
 	"github.com/Wlczak/vlastas-vpn/state"
 	"github.com/Wlczak/vlastas-vpn/templates"
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,6 @@ func HandleAdminDashRoot(ctx *gin.Context) {
 
 	const adminDashTemplate = "admin.tmpl"
 	tmpl := templates.ParseTemplate(adminDashTemplate)
-	tmpl.ExecuteTemplate(ctx.Writer, adminDashTemplate, adminDashValues)
-
+	err := tmpl.ExecuteTemplate(ctx.Writer, adminDashTemplate, adminDashValues)
+	h.ChckErr(err)
 }
