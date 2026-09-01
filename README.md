@@ -8,5 +8,11 @@ The current goal is to get the simples version of this project as is realistical
 
 - [x] Working tunneling from devices to target VPN server
 - [x] Basic unstyled server dashboard for switching target server/device IP location
-- [ ] Fetching of Mullvad servers
-- [ ] Public user API for changing the target Mullvad server
+- [x] Fetching of Mullvad servers
+- [x] Public user API for changing the target Mullvad server
+
+## Client projects
+
+### Android
+
+- Vlasta's VPN for Android: https://github.com/Wlczak/vlastas-vpn-android
