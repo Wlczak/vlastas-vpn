@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <p>Current location: {{.CurrentLocation}}</p>
-    <form action="" method="post">
-      <select name="location">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control Panel</title>
+</head>
+
+<body>
+  <p>Current location: {{.CurrentLocation.CountryName}}</p>
+  <form action="" method="post">
+    <select name="hostname">
       {{range .Locations}}
-        <option value="{{.Code}}">{{.Name}}</option>
+      <option value="{{.Hostname}}" {{ if eq .Hostname $.CurrentLocation.Hostname }} selected {{ end }}>
+        {{.CountryName}}, {{.CityName}} - {{.Hostname}}
+      </option>
       {{end}}
-      </select>
-      <button type="submit">Submit</button>
-    </form>
-  </body>
+    </select>
+    <button type="submit">Submit</button>
+  </form>
+</body>
+
 </html>

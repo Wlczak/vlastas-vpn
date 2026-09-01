@@ -3,35 +3,32 @@ package dashboard
 import (
 	"net/http"
 
+	h "github.com/Wlczak/vlastas-vpn/helpers"
 	"github.com/Wlczak/vlastas-vpn/state"
 	"github.com/Wlczak/vlastas-vpn/templates"
 	"github.com/gin-gonic/gin"
 )
 
 type AdminDashValues struct {
-	Locations       []*ServerGeoLocation
-	CurrentLocation string
-}
-type ServerGeoLocation struct {
-	Code string
-	Name string
+	Locations       []state.MullvadServerLocation
+	CurrentLocation state.MullvadServerLocation
 }
 
 func HandleAdminDashRoot(ctx *gin.Context) {
 	if ctx.Request.Method == http.MethodPost {
-		location := ctx.PostForm("location")
-		state.SetServerLocation(location)
+		locationHostname := ctx.PostForm("hostname")
+		state.SetServerLocationByHostname(locationHostname)
 		// ctx.String(http.StatusOK, location)
 		// ctx.Redirect(http.StatusTemporaryRedirect, "/admin")
 	}
 
 	adminDashValues := &AdminDashValues{
-		Locations:       []*ServerGeoLocation{{"location1", "Location1"}, {"location2", "Location2"}, {"location3", "Location3"}},
-		CurrentLocation: state.GetServerState().Location,
+		Locations:       state.GetServerState().LocationList,
+		CurrentLocation: state.GetServerState().CurrentLocation,
 	}
 
 	const adminDashTemplate = "admin.tmpl"
 	tmpl := templates.ParseTemplate(adminDashTemplate)
-	tmpl.ExecuteTemplate(ctx.Writer, adminDashTemplate, adminDashValues)
-
+	err := tmpl.ExecuteTemplate(ctx.Writer, adminDashTemplate, adminDashValues)
+	h.PanicChckErr(err)
 }
