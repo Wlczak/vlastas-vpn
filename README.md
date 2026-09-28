@@ -6,13 +6,23 @@ The backend service for the Vlasta's VPN project or VVPN
 
 The current goal is to get the simples version of this project as is realistically practical. The MVP aims for a release which supports live fetching and parsing of the Mullvad server list as well as creating a tunnel between connected devices and the Mullvad servers. The connection will be configurable from a simple HTML control panel or the public APi and will be accompanied by a release of the android app. The next stage of the project will likely aim at broadening platform support and user authentication for any practical use.
 
-- [x] Working tunneling from devices to target VPN server
-- [x] Basic unstyled server dashboard for switching target server/device IP location
-- [x] Fetching of Mullvad servers
-- [x] Public user API for changing the target Mullvad server
+### 1st stage
+- [ ] Working tunneling from devices to target VPN server (code implemented but not in use)
+- [ ] Basic unstyled server dashboard for switching target server/device IP location (rework with some js)
+- [ ] Fetching of Mullvad servers (make into timed cache instead of fetch calls)
+- [ ] Public user API for changing the target Mullvad server (needs to be pretty solid)
+
+### 2nd stage
+- [ ] user accounts + auth (no user roles)
+
+### 3rd stage
+- [ ] Admin accounts
+- [ ] user limits
+- [ ] switching quota/points system
+- [ ] support for multiple mullvad connections
 
 ## Client projects
 
 ### Android
 
-- Vlasta's VPN for Android: https://github.com/Wlczak/vlastas-vpn-android
+- Vlasta's VPN for Android: https://github.com/Wlczak/vlastas-vpn-android (on hold until server is up to functional standard)
