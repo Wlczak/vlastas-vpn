@@ -43,7 +43,7 @@ func HandleSetLocation(ctx *gin.Context) {
 // @Description  Retrieves the currently set server location from state
 // @Tags         location
 // @Produce      json
-// @Success      200  {object}  state.GetLocationResponse
+// @Success      200  {object}  GetLocationResponse
 // @Failure      404  {object}  ErrorResponse
 // @Router       /getLocation [get]
 func HandleGetCurrentLocation(ctx *gin.Context) {
