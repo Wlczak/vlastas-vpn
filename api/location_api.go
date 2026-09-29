@@ -11,11 +11,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Set server location godoc
+// @Summary      Set the current server location
+// @Description  Changes the server location used by the VPN
+// @Tags         location
+// @Accept       json
+// @Produce      json
+// @Param        request  body      SetLocationRequest  true  "Server location"
+// @Success      200      {object}  SetLocationRequest
+// @Failure      400      {object}  ErrorResponse
+// @Router       /setLocation [post]
 func HandleSetLocation(ctx *gin.Context) {
-	type SetLocationRequest struct {
-		LocationHostname string
-	}
-
 	locationRequestByte, err := io.ReadAll(ctx.Request.Body)
 	h.PanicChckErr(err)
 
@@ -44,8 +50,7 @@ func HandleSetLocation(ctx *gin.Context) {
 // @Tags         location
 // @Produce      json
 // @Success      200  {object}  GetLocationResponse
-// @Failure      404  {object}  ErrorResponse
-// @Router       /getLocation [get]
+// @Router       /getCurrentLocation [get]
 func HandleGetCurrentLocation(ctx *gin.Context) {
 	location := state.GetServerLocationService().CurrentLocation
 	getLocationResponse := &GetLocationResponse{
@@ -54,6 +59,13 @@ func HandleGetCurrentLocation(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, getLocationResponse)
 }
 
+// Get location list godoc
+// @Summary      Get available server locations
+// @Description  Retrieves the list of server locations available to the VPN
+// @Tags         location
+// @Produce      json
+// @Success      200  {array}   state.MullvadServerLocation
+// @Router       /getLocationList [get]
 func HandleGetLocationList(ctx *gin.Context) {
 	list := state.GetServerLocationService().GetLocationList()
 

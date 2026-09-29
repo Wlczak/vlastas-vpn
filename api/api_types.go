@@ -6,6 +6,10 @@ type ErrorResponse struct {
 	Msg string
 }
 
+type SetLocationRequest struct {
+	LocationHostname string
+}
+
 type GetLocationResponse struct {
 	Location state.MullvadServerLocation
 }
