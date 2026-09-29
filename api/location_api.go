@@ -19,7 +19,7 @@ func HandleSetLocation(ctx *gin.Context) {
 	locationRequestByte, err := io.ReadAll(ctx.Request.Body)
 	h.PanicChckErr(err)
 
-	locationList := state.GetServerState().LocationList
+	locationList := state.GetServerLocationService().GetLocationList()
 	locationCodeList := make([]string, len(locationList))
 	for i, location := range locationList {
 		locationCodeList[i] = location.Hostname
@@ -30,7 +30,7 @@ func HandleSetLocation(ctx *gin.Context) {
 	h.PanicChckErr(err)
 
 	if slices.Contains(locationCodeList, setLocationRequest.LocationHostname) {
-		state.SetServerLocationByHostname(setLocationRequest.LocationHostname)
+		state.GetServerLocationService().SetServerLocationByHostname(setLocationRequest.LocationHostname)
 		ctx.JSON(http.StatusOK, setLocationRequest)
 	} else {
 		ctx.JSON(http.StatusBadRequest, &ErrorResponse{Msg: "Could not find " + setLocationRequest.LocationHostname + " given location in the server list"})
@@ -46,11 +46,11 @@ func HandleSetLocation(ctx *gin.Context) {
 // @Success      200  {object}  state.ServerGeoLocation
 // @Failure      404  {object}  ErrorResponse
 // @Router       /getLocation [get]
-func HandleGetLocation(ctx *gin.Context) {
+func HandleGetCurrentLocation(ctx *gin.Context) {
 	type GetLocationResponse struct {
 		Location state.MullvadServerLocation
 	}
-	location := state.GetServerState().CurrentLocation
+	location := state.GetServerLocationService().CurrentLocation
 	getLocationResponse := &GetLocationResponse{
 		Location: location,
 	}
@@ -58,25 +58,7 @@ func HandleGetLocation(ctx *gin.Context) {
 }
 
 func HandleGetLocationList(ctx *gin.Context) {
-	s := state.GetServerState()
-	freshMullvadServerLocationList := fetchMullvadLocationList()
+	list := state.GetServerLocationService().GetLocationList()
 
-	s.LocationList = freshMullvadServerLocationList
-	ctx.JSON(http.StatusOK, s.LocationList)
-}
-
-func fetchMullvadLocationList() []state.MullvadServerLocation {
-	url := "https://api.mullvad.net/www/relays/all" // TODO: Move to constants envetually
-	resp, err := http.Get(url)
-	h.PanicChckErr(err)
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	h.PanicChckErr(err)
-
-	mullvadServerLocationList := []state.MullvadServerLocation{}
-	err = json.Unmarshal(body, &mullvadServerLocationList)
-	h.PanicChckErr(err)
-
-	return mullvadServerLocationList
+	ctx.JSON(http.StatusOK, list)
 }

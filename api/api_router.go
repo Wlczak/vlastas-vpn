@@ -13,7 +13,7 @@ func SetupApiRouter(apiRouter *gin.RouterGroup) *gin.RouterGroup {
 
 	apiRouter.POST("/setLocation", HandleSetLocation)
 
-	apiRouter.GET("/getLocation", HandleGetLocation)
+	apiRouter.GET("/getCurrentLocation", HandleGetCurrentLocation)
 	apiRouter.GET("/getLocationList", HandleGetLocationList)
 
 	return apiRouter
