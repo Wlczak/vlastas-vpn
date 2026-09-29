@@ -47,9 +47,6 @@ func HandleSetLocation(ctx *gin.Context) {
 // @Failure      404  {object}  ErrorResponse
 // @Router       /getLocation [get]
 func HandleGetCurrentLocation(ctx *gin.Context) {
-	type GetLocationResponse struct {
-		Location state.MullvadServerLocation
-	}
 	location := state.GetServerLocationService().CurrentLocation
 	getLocationResponse := &GetLocationResponse{
 		Location: location,
