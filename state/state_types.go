@@ -1,13 +1,13 @@
 package state
 
 type ServerState struct {
-	CurrentLocation MullvadServerLocation
-	LocationList    []MullvadServerLocation
+	LocationService *ServerLocationService
 }
 
-type ServerGeoLocation struct {
-	Code string
-	Name string
+type ServerLocationService struct {
+	CurrentLocation MullvadServerLocation
+	locationList    []MullvadServerLocation
+	lastFetchedAt   int64
 }
 
 type MullvadServerLocation struct {
