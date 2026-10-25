@@ -11,14 +11,14 @@ import (
 )
 
 type VpnConfig struct {
-	upPrivateKey                  string
-	upPeerPublicKey               string
-	upEndpoint                    string
-	upAllowedIP                   string
-	upPersistentKeepaliveInterval string
-	upInterfaceIp                 string
-	downPrivateKey                string
-	downClientPublicKey           string
+	UpPrivateKey                  string
+	UpPeerPublicKey               string
+	UpEndpoint                    string
+	UpAllowedIP                   string
+	UpPersistentKeepaliveInterval string
+	UpInterfaceIp                 string
+	DownPrivateKey                string
+	DownClientPublicKey           string
 }
 
 type VpnGateway struct {
@@ -28,20 +28,20 @@ type VpnGateway struct {
 }
 
 func StartVpn(config VpnConfig) (*VpnGateway, error) {
-	upPrivateKey := helpers.Base64tohex(config.upPrivateKey)
-	upPeerPublicKey := helpers.Base64tohex(config.upPeerPublicKey)
-	upEndpoint := config.upEndpoint
-	upAllowedIP := config.upAllowedIP
-	upPersistentKeepaliveInterval := config.upPersistentKeepaliveInterval
-	upInterfaceIp := config.upInterfaceIp
+	upPrivateKey := helpers.Base64tohex(config.UpPrivateKey)
+	upPeerPublicKey := helpers.Base64tohex(config.UpPeerPublicKey)
+	upEndpoint := config.UpEndpoint
+	upAllowedIP := config.UpAllowedIP
+	upPersistentKeepaliveInterval := config.UpPersistentKeepaliveInterval
+	upInterfaceIp := config.UpInterfaceIp
 
 	upConfigString := fmt.Sprintf(
 		"private_key=%s\npublic_key=%s\nendpoint=%s\nallowed_ip=%s\npersistent_keepalive_interval=%s\n",
 		upPrivateKey, upPeerPublicKey, upEndpoint, upAllowedIP, upPersistentKeepaliveInterval,
 	)
 
-	downPrivateKey := helpers.Base64tohex(config.downPrivateKey)
-	downClientPublicKey := helpers.Base64tohex(config.downClientPublicKey)
+	downPrivateKey := helpers.Base64tohex(config.DownPrivateKey)
+	downClientPublicKey := helpers.Base64tohex(config.DownClientPublicKey)
 
 	downConfigString := fmt.Sprintf(
 		"private_key=%s\nlisten_port=51821\npublic_key=%s\nallowed_ip=10.1.0.2/32\n",
